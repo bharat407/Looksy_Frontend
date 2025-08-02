@@ -162,7 +162,7 @@ export default function Home(props) {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-around",
+            justifyContent: "space-evenly",
             margin: "0px 40px 40px 40px",
             width: "90%",
             padding: 2,

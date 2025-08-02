@@ -17,7 +17,7 @@ export default function ThreeCardComponent(props) {
           margin: 3,
           position: "relative",
           width: 405,
-          height: "auto",
+          // height: "auto",
           cursor: "pointer",
           textAlign: "center",
         }}
@@ -25,14 +25,15 @@ export default function ThreeCardComponent(props) {
         <img
           title={item.subcategoryname}
           src={`${item.icon}`}
-          style={{ width: "100%", height: "100%" }}
- alt=""        />
+          style={{ width: "100%", height: "65%" }}
+          alt=""
+        />
         <div
           style={{
             fontSize: 20,
             fontWeight: "bold",
             position: "absolute",
-            top: "93%",
+            // top: "95%",
             width: "99%",
             height: 28,
             textAlign: "center",

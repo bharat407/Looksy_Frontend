@@ -52,11 +52,12 @@ export default function TwoCardComponent(props) {
       />
       <div
         style={{
+          width: "56%",
           fontSize: 20,
           fontWeight: "bold",
           position: "absolute",
-          bottom: 0,
-          left: 0,
+          bottom: 3,
+          left: 119,
           right: 0,
           padding: "10px",
           color: "#FFF",
