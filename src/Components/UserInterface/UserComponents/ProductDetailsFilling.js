@@ -32,7 +32,9 @@ export default function ProductDetailsFilling(props) {
   // States
   const [sizes, setSizes] = useState([]); // sizes is array of strings like ["S", "L"]
   const [colors, setColors] = useState([]); // array of colors
-  const [selectedSize, setSelectedSize] = useState(selectedProduct?.size || null);
+  const [selectedSize, setSelectedSize] = useState(
+    selectedProduct?.size || null
+  );
   const [selectedColor, setSelectedColor] = useState(
     selectedProduct?.color || null
   );
@@ -42,47 +44,46 @@ export default function ProductDetailsFilling(props) {
   const matches = useMediaQuery("(max-width:720px)");
 
   // Fetch sizes from POST API fetch_all_dimensions
- const fetchSizes = async () => {
-  if (!product.categoryid || !product.subcategoryid || !product.id) {
-    console.error("Missing categoryid, subcategoryid or productid");
-    return;
-  }
+  const fetchSizes = async () => {
+    if (!product.categoryid || !product.subcategoryid || !product.id) {
+      console.error("Missing categoryid, subcategoryid or productid");
+      return;
+    }
 
-  const body = {
-    categoryid: product.categoryid,
-    subcategoryid: product.subcategoryid,
-    productid: product.id,
+    const body = {
+      categoryid: product.categoryid,
+      subcategoryid: product.subcategoryid,
+      productid: product.id,
+    };
+
+    const result = await postData("api/dimensions/fetch_all_dimensions", body);
+
+    if (result.status === false) {
+      Swal.fire("Error", result.error || "Failed to fetch sizes", "error");
+      return;
+    }
+
+    // Find the matching dimension object
+    const matchedDimension = result.find(
+      (dim) =>
+        dim.categoryid === product.categoryid &&
+        dim.productid === product.id &&
+        dim.subcategoryid === product.subcategoryid
+    );
+
+    const sizesList = matchedDimension ? matchedDimension.dimension : [];
+
+    setSizes(sizesList);
+
+    // Automatically select the first size if none is selected
+    if (!selectedSize && sizesList.length > 0) {
+      const firstSize = sizesList[0];
+      setSelectedSize(firstSize);
+      fetchColors(product.id, firstSize);
+    } else if (selectedSize) {
+      fetchColors(product.id, selectedSize);
+    }
   };
-
-  const result = await postData("api/dimensions/fetch_all_dimensions", body);
-
-  if (result.status === false) {
-    Swal.fire("Error", result.error || "Failed to fetch sizes", "error");
-    return;
-  }
-
-  // Find the matching dimension object
-  const matchedDimension = result.find(
-    (dim) =>
-      dim.categoryid === product.categoryid &&
-      dim.productid === product.id &&
-      dim.subcategoryid === product.subcategoryid
-  );
-
-  const sizesList = matchedDimension ? matchedDimension.dimension : [];
-
-  setSizes(sizesList);
-
-  // Automatically select the first size if none is selected
-  if (!selectedSize && sizesList.length > 0) {
-    const firstSize = sizesList[0];
-    setSelectedSize(firstSize);
-    fetchColors(product.id, firstSize);
-  } else if (selectedSize) {
-    fetchColors(product.id, selectedSize);
-  }
-};
-
 
   // Fetch colors from GET API using productId query param
   const fetchColors = async (productId, size) => {
@@ -108,7 +109,7 @@ export default function ProductDetailsFilling(props) {
       if (colorsData.length > 0) {
         const firstColor = colorsData[0];
         setSelectedColor(firstColor);
-        setQty(1); // Set quantity to 1 when a color is auto-selected
+        setQty(0); // Set quantity to 1 when a color is auto-selected
       } else {
         setSelectedColor(null);
         setQty(0);
@@ -125,7 +126,7 @@ export default function ProductDetailsFilling(props) {
   }, []);
 
   useEffect(() => {
-    if (selectedSize && selectedColor && qty === 1 && !selectedProduct) {
+    if (selectedSize && selectedColor && qty === 0 && !selectedProduct) {
       const updatedProduct = {
         ...product,
         size: selectedSize,
@@ -135,7 +136,15 @@ export default function ProductDetailsFilling(props) {
       dispatch({ type: "ADD_CART", payload: [product.id, updatedProduct] });
       if (props.updateCart) props.updateCart();
     }
-  }, [selectedSize, selectedColor, qty, product, dispatch, props, selectedProduct]);
+  }, [
+    selectedSize,
+    selectedColor,
+    qty,
+    product,
+    dispatch,
+    props,
+    selectedProduct,
+  ]);
 
   // Handle selecting a size
   const handleSize = (index) => {
@@ -149,13 +158,11 @@ export default function ProductDetailsFilling(props) {
   // Handle selecting a color
   const handleColor = (colorValue) => {
     setSelectedColor(colorValue);
-    setQty(1);
+    setQty(0);
   };
 
   // Handle quantity change
   const handleQtyChange = (value) => {
-    
-
     if (!product || !product.id) {
       console.error("Product data is not available yet.");
       return;
@@ -224,9 +231,7 @@ export default function ProductDetailsFilling(props) {
                 ₹{product.price}
               </span>
               &nbsp;&nbsp;
-              <span
-                style={{ fontSize: 18, fontWeight: 700, color: "#4d9d0b" }}
-              >
+              <span style={{ fontSize: 18, fontWeight: 700, color: "#4d9d0b" }}>
                 (₹{product.price - product.offerprice} off)
               </span>
             </>
@@ -236,7 +241,8 @@ export default function ProductDetailsFilling(props) {
             </span>
           )}
           <div>
-            <span style={{ fontSize: 15 }}>Inclusive of All Taxes +</span>&nbsp;&nbsp;
+            <span style={{ fontSize: 15 }}>Inclusive of All Taxes +</span>
+            &nbsp;&nbsp;
             <span style={{ color: "#efb30b", fontWeight: 600 }}>
               Free Shipping
             </span>
@@ -276,7 +282,10 @@ export default function ProductDetailsFilling(props) {
                   fontSize: 13,
                   cursor: "pointer",
                   borderRadius: "50%",
-                  border: sizeVal === selectedSize ? "2px solid #51cccc" : "1px solid #ddd",
+                  border:
+                    sizeVal === selectedSize
+                      ? "2px solid #51cccc"
+                      : "1px solid #ddd",
                 }}
               >
                 {sizeVal}
@@ -307,7 +316,10 @@ export default function ProductDetailsFilling(props) {
                 color: selectedColor,
                 qty: qty,
               };
-              dispatch({ type: "ADD_CART", payload: [product.id, updatedProduct] });
+              dispatch({
+                type: "ADD_CART",
+                payload: [product.id, updatedProduct],
+              });
               if (props.updateCart) props.updateCart();
               navigate("/mycart");
             }}

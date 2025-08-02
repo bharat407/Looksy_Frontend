@@ -48,7 +48,7 @@ const ImageSlider = ({ product }) => {
         alt={`Product view ${index + 1}`}
         style={{
           width: "100%",
-          height: "auto",
+          height: "400px",
           maxHeight: "100%",
           objectFit: "contain",
           margin: "0 auto",
